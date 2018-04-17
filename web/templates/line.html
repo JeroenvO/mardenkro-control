@@ -18,7 +18,7 @@
             var context = canvas.getContext('2d');
 
             socket.on('update', function (msg) {
-                msg = JSON.parse(msg)
+                msg = JSON.parse(msg);
                 $('div#log')[0].innerHTML += msg + '<br />';
                 var offset = msg[0];
                 var angle = msg[1];

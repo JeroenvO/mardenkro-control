@@ -2,9 +2,9 @@
 
 {% block content %}
     <div>
-        <a class="btn" id="p" href="#">Start paint</a>
+        <a class="btn" id="paint" href="#">Start paint</a>
         <br/>
-        <a class="btn" href="/start/">Start</a><a class="btn" href="/stop/">Stop</a>
+        <a class="btn" href="#" id="start">Start</a><a class="btn" href="#" id="stop">Stop</a>
         <br />
         <div id="log" style="overflow-y: scroll"></div>
 {#        <a id="n">E</a>#}
@@ -24,7 +24,7 @@
                 $('#log')[0].innerHTML = msg+'<br />'+$('#log')[0].innerHTML ;
                 console.log(msg)
             });
-            $('a#p').click(function(){socket.send('control', 'p')});
+            $('a.btn').click(function(){socket.emit('update', '', this.id)});
         });
     </script>
 {% endblock %}

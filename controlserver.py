@@ -77,7 +77,6 @@ class ControlThread(threading.Thread):
 
         :return:
         """
-        self.lineproc.kill()
         self.running = False
 
     def run(self):
@@ -132,5 +131,8 @@ class ControlThread(threading.Thread):
                 break
             self.sio.emit('update', 'loop', namespace='/control')
 
-        # loop terminated
+        # loop terminated.
+
+        self.lineproc.terminate()
+        self.lineproc.kill()
         self.sio.emit('update', 'Stop running', namespace='/control')

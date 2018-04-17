@@ -10,27 +10,24 @@ from controlserver import ControlThread
 c = None
 
 
-@app.route('/start/')
-def agentstartall():
+@socketio.on('update', namespace='/control')
+def message(sid, data):
+    print('recv: '+data)
     global c
-    if not c:
-        c = ControlThread(socketio)
-        c.start()
-        socketio.emit('update', 'Started thread', namespace='/control')
-
-    else:
-        socketio.emit('update', 'Already started', namespace='/control')
-    return redirect(url_for('home'))
-
-@app.route('/stop/')
-def agentstopall():
-    global c
-    if c:
-        c.stop()
-        socketio.emit('update', 'Stopped thread', namespace='/control')
-    else:
-        socketio.emit('update', 'No thread', namespace='/control')
-    return redirect(url_for('home'))
+    if data =='start':
+        if not c:
+            c = ControlThread(socketio)
+            c.start()
+            socketio.emit('update', 'Started thread', namespace='/control')
+        else:
+            socketio.emit('update', 'Already started', namespace='/control')
+    elif data == 'stop':
+        if c:
+            c.stop()
+            c=None
+            socketio.emit('update', 'Stopped thread', namespace='/control')
+        else:
+            socketio.emit('update', 'No thread', namespace='/control')
 
 @app.route('/')
 @app.route('/home/')

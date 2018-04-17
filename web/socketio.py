@@ -3,7 +3,7 @@ from os import environ
 
 from flask import render_template, Flask
 
-HOST = environ.get('SERVER_HOST', 'localhost')
+HOST = '127.0.0.1'
 try:
     PORT = int(environ.get('SERVER_PORT', '5555'))
 except ValueError:
