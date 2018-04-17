@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+    <div id="log"></div>
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            var namespace = '/line';
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+            socket.on('update', function (msg) {
+                $('div#text')[0].innerHTML += msg + '<br />';
+            });
+        });
+    </script>
+{% endblock %}

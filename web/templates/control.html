@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <a class="btn" id="n">N</a>
+        <br/>
+        <a class="btn" id="w">W</a>
+        <a class="btn" id="e">E</a>
+        <br/>
+        <a class="btn" id="s">S</a>
+        <br/>
+    </div>
+        <div id="log" style="overflow-y: scroll"></div>
+
+{% endblock %}
+
+
+{% block scripts %}
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            namespace = '/control';
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            socket.on('update', function (msg) {
+                console.log(msg)
+                $('#log')[0].innerHTML = msg+'<br />'+$('#log')[0].innerHTML ;
+
+            });
+
+            $('a#n').click(function(){socket.send('control', 'n')});
+            $('a#w').click(function(){socket.send('control', 'w')});
+            $('a#e').click(function(){socket.send('control', 'e')});
+            $('a#s').click(function(){socket.send('control', 's')});
+        });
+    </script>
+{% endblock %}
