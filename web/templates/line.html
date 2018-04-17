@@ -2,7 +2,9 @@
 
 {% block content %}
     <div>
-    <div id="log"></div>
+        <canvas id="myCanvas" width="578" height="200"></canvas>
+
+        <div id="log"></div>
     </div>
 {% endblock %}
 
@@ -12,10 +14,36 @@
         $(document).ready(function () {
             var namespace = '/line';
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            var canvas = document.getElementById('myCanvas');
+            var context = canvas.getContext('2d');
 
             socket.on('update', function (msg) {
-                $('div#text')[0].innerHTML += msg + '<br />';
+                msg = JSON.parse(msg)
+                $('div#log')[0].innerHTML += msg + '<br />';
+                var offset = msg[0];
+                var angle = msg[1];
+                var w=canvas.width;
+                var h=canvas.height;
+                context.clearRect ( 0 , 0 , w, h);
+                //horizontal line below
+                context.beginPath();
+                context.moveTo(0, h);
+                context.lineTo(w, h);
+                context.stroke();
+                //notch in the center
+                context.beginPath();
+                context.moveTo(w/2, h);
+                context.lineTo(w/2, h-h/10);
+                context.stroke();
+
+                //line
+                context.beginPath();
+                context.moveTo(offset*w, h);
+                context.lineTo(0, 0);
+                context.stroke();
             });
+
+
         });
     </script>
 {% endblock %}
