@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div>
+        <a class="btn" id="p" href="#">Start paint</a>
+        <br/>
+        <a class="btn" href="/start/">Start</a><a class="btn" href="/stop/">Stop</a>
+        <br />
+        <div id="log" style="overflow-y: scroll"></div>
+{#        <a id="n">E</a>#}
+{#        <br/>#}
+{#        <a id="n">S</a>#}
+{#        <br/>#}
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            var namespace = '/control';
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            socket.on('update', function (msg) {
+                $('#log')[0].innerHTML = msg+'<br />'+$('#log')[0].innerHTML ;
+                console.log(msg)
+            });
+            $('a#p').click(function(){socket.send('control', 'p')});
+        });
+    </script>
+{% endblock %}
