@@ -13,7 +13,7 @@ class ControlThread(threading.Thread):
         self.spray = False
         self.speed = 1
         self.sio.emit('update','Init thread', namespace='/control')
-        self.lineproc = subprocess.Popen(['python', './spammer.py'], shell=True, stdin=None, stdout=subprocess.PIPE, universal_newlines=True)
+        self.lineproc = subprocess.Popen(['python', './spammer.py'], stdout=subprocess.PIPE, universal_newlines=True)
 
         super().__init__()
 
@@ -23,8 +23,9 @@ class ControlThread(threading.Thread):
 
         :return:
         """
-        if self.lineproc.poll() is not None:
-            error = ['read_line', 'no line proc. Code: '+str(self.lineproc.poll())]
+        p =self.lineproc.poll()
+        if p is not None:
+            error = ['read_line', 'no line proc. Code: '+str(p)]
             raise Exception(error)
         try:
             val = self.lineproc.stdout.readline()
@@ -33,7 +34,7 @@ class ControlThread(threading.Thread):
         except TimeoutExpired:
             self.lineproc.kill()
             outs, errs = self.lineproc.communicate()
-            running = False
+            self.running = False
             error = ['read_line', 'timeout: '+str(errs)]
             raise Exception(error)
 
