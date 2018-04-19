@@ -1,33 +1,36 @@
 """
 Routes and views for the flask application.
 """
-from web.socketio import *
-from flask import render_template, abort, url_for, redirect, Flask
-
-from controlserver import ControlThread
+from flask import render_template, Flask
+import socketio
+from old_flask.controlserver import ControlThread
 
 # controller socket.
 c = None
 
+sio = socketio.Server(async_mode='eventlet')
+app = Flask(__name__)
 
-@socketio.on('update', namespace='/control')
+@sio.on('update', namespace='/control')
 def message(sid, data):
     print('recv: '+data)
     global c
     if data =='start':
         if not c:
-            c = ControlThread(socketio)
+            c = ControlThread(sio)
             c.start()
-            socketio.emit('update', 'Started thread', namespace='/control')
+            sio.emit('update', 'Started thread', namespace='/control')
         else:
-            socketio.emit('update', 'Already started', namespace='/control')
+            sio.emit('update', 'Already started', namespace='/control')
     elif data == 'stop':
         if c:
+            sio.emit('update', 'Stopping thread', namespace='/control')
             c.stop()
+            # c.join()
             c=None
-            socketio.emit('update', 'Stopped thread', namespace='/control')
+            sio.emit('update', 'Stopped thread', namespace='/control')
         else:
-            socketio.emit('update', 'No thread', namespace='/control')
+            sio.emit('update', 'No thread', namespace='/control')
 
 @app.route('/')
 @app.route('/home/')

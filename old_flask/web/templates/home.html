@@ -24,7 +24,7 @@
                 $('#log')[0].innerHTML = msg+'<br />'+$('#log')[0].innerHTML ;
                 console.log(msg)
             });
-            $('a.btn').click(function(){socket.emit('update', '', this.id)});
+            $('a.btn').click(function(){socket.emit('update', this.id)});
         });
     </script>
 {% endblock %}
