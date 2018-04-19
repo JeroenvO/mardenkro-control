@@ -15,8 +15,9 @@ class ArduinoClient(WebSocketClientProtocol):
 
     def onMessage(self, payload, isBinary):
         payload = payload.decode('utf-8')
-        print("tx: "+payload)
-        ser.write(payload)
+        if payload[0] == 'C':  # only listen to control messages
+            print("tx: "+payload)
+            ser.write(payload)
 
     def onClose(self, wasClean, code, reason):
         print("Arduino server connection closed: {0}".format(reason))

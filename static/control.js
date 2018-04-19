@@ -5,7 +5,7 @@ $(document).ready(function () {
     var canvas = document.getElementById('canvas');
     var context = canvas.getContext('2d');
     var w = $('.container').width();
-    var h = w*0.8;
+    var h = w * 0.8;
     $('#canvas').width(w).height(h);
 
     context.canvas.width = w;
@@ -25,10 +25,10 @@ $(document).ready(function () {
         context.stroke();
         //line
         context.beginPath();
-        var x_o = offset * w/2+w/2;
+        var x_o = offset * w / 2 + w / 2;
         context.moveTo(x_o, h);
-        var x_e = x_o+Math.tan(angle)*h;
-        context.lineTo(x_e ,0);
+        var x_e = x_o + Math.tan(angle) * h;
+        context.lineTo(x_e, 0);
         context.stroke();
     }
 
@@ -42,13 +42,13 @@ $(document).ready(function () {
     };
     socket.onmessage = function (e) {
         console.log("rx: " + e.data);
-        if(e.data.startsWith('L')) { //line poinot
+        if (e.data.startsWith('L')) { //line poinot
             var d = JSON.parse(e.data.substr(1));
-            if(typeof d[1] === 'string'){
+            if (typeof d[1] === 'string') {
                 $('#info').text(d[1])
-            }else{
-                $('#info').text('# lines [0-100]: '+d[3].toString());
-                drawLine(d[1],d[2]);
+            } else {
+                $('#info').text('# lines [0-100]: ' + d[3].toString());
+                drawLine(d[1], d[2]);
             }
         }
     };
@@ -56,8 +56,15 @@ $(document).ready(function () {
         console.log("Connection closed.");
         socket = null;
         isopen = false;
-    }
+    };
 
-    $('a.btn').click(function(){socket.send('C'+this.id.toString())});
+    $('a.btn').click(function () {
+        var s = $('#speed').value();
+        var v = JSON.parse($(this).data('dir'));
+        v = v * s;
+        var msg = 'C' + JSON.stringify(v);
+        console.log(msg);
+        socket.send(msg)
+    });
 
 });
