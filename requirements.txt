@@ -1,2 +1,4 @@
 asyncio
 autobahn
+pyserial
+

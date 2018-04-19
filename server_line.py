@@ -1,4 +1,3 @@
-import io
 import subprocess
 
 from autobahn.asyncio.websocket import WebSocketClientProtocol
@@ -52,7 +51,7 @@ class LineClient(WebSocketClientProtocol):
         return
 
     def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {0}".format(reason))
+        print("Line reader connection closed: {0}".format(reason))
         self.lineproc.terminate()
 
 
