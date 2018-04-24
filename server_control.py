@@ -1,9 +1,17 @@
 import json
+from datetime import datetime
+from threading import Thread
+from time import sleep
+
 from autobahn.asyncio.websocket import WebSocketClientProtocol
 
+#globals
 linact_post = 0  # position of horizontal moving boom.
+buffer_arduino = ''
+buffer_line = []
 
-def motor_control(offset, angle):
+
+def motor_control(client):
     """
     some control algorithm to convert offset, angle and linact_pos to a motor control command.
 
@@ -12,28 +20,42 @@ def motor_control(offset, angle):
     :return: left and right motor position.
     """
     global linact_post
-    #TODO @bakelnaar
-    left, right = 1, 1
-    return [left, right]
+    global buffer_arduino
+    global buffer_line
+    client.sendMessage(u'Ustart controlloop thread'.encode('utf-8'))
+    while True:
+        client.sendMessage("control loop. \n"
+                           "lina: {}\n"
+                           "ardu: {}\n"
+                           "line: {}".format(linact_post, buffer_arduino, buffer_line).encode('utf-8'))
+        sleep(1)
 
 
 class ControlClient(WebSocketClientProtocol):
-    global ser
     def onOpen(self):
-        self.sendMessage(u"Control server connected".encode('utf8'))
+        self.sendMessage(u"UControl server connected".encode('utf8'))
+        self.thread = Thread(target=motor_control, args=(self,))
+        self.thread.start()
 
     def onMessage(self, payload, isBinary):
+        global buffer_arduino
+        global buffer_line
         payload = payload.decode('utf-8')
         if payload[0] == 'L':  # only listen to line messages
-            print("rx: "+payload)
-            type, offset, angle, nlines = json.loads(payload[1:])  # decode line input
-            motoraction = motor_control(offset, angle)
-            # send as control action to server_message, server_arduino will relay it.
-            self.sendMessage('C'+json.dumps(motoraction))
+            # type, offset, angle, nlines
+            try:
+                buffer_line = [datetime.now(), json.loads(payload[1:])]
+                assert len(buffer_line) == 4  # check length of payload
+            except:
+                pass
+        elif payload[0] == 'A':
+            print("rx: " + payload)
+            buffer_arduino = [datetime.now(), payload[1:]]
 
     def onClose(self, wasClean, code, reason):
-        print("Arduino server connection closed: {0}".format(reason))
-        ser.close()
+        print("UControl loop connection closed: {0}".format(reason))
+        self.thread.join()
+
 
 if __name__ == '__main__':
     import asyncio

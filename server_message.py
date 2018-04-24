@@ -3,16 +3,6 @@ from autobahn.asyncio.websocket import WebSocketServerProtocol
 clients = []
 
 
-# send data to all autobahn clients
-def sendData(data):
-    global clients
-    for client in clients:
-        if client:
-            client.sendMessage(data, 0)
-            print("sending!" + data)
-        else:
-            print("invalid client!")
-
 class MessageServer(WebSocketServerProtocol):
     def onConnect(self, request):
         global clients
@@ -24,10 +14,14 @@ class MessageServer(WebSocketServerProtocol):
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {}".format(reason))
+        global clients
+        for client in clients:
+            if client != self:
+                client.sendMessage('UError, some connection dropped!'.encode('utf-8'), isBinary=False)
 
     def onMessage(self, payload, isBinary):
         # forward message to others.
-        print("WS message received: " + payload.decode('utf-8'))
+        # print("WS message received: " + payload.decode('utf-8'))
         global clients
         for client in clients:
             if client != self:

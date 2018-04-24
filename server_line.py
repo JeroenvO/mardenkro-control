@@ -1,29 +1,12 @@
 import subprocess
-
+import time
 from autobahn.asyncio.websocket import WebSocketClientProtocol
-
-
-#
-# def read_line(lineproc):
-#     p = lineproc.poll()
-#     print("proc: "+str(p))
-#     if p is not None:
-#         error = ['read_line', 'no line proc. Code: ' + str(p)]
-#         raise Exception(error)
-#     try:
-#         val = lineproc.stdout.readline()
-#         print("val: "+str(val))
-#         return val
-#     except TimeoutExpired:
-#         lineproc.kill()
-#         outs, errs = lineproc.communicate()
-#         running = False
-#         error = ['read_line', 'timeout: ' + str(errs)]
-#         raise Exception(error)
 
 def read_lines(client):
     lineproc = subprocess.Popen(['./soccerline'], stdout=subprocess.PIPE, universal_newlines=False, bufsize=0, shell=False)
     client.sendMessage(str(lineproc).encode('utf-8'))
+    i = 0
+    start = time.time()
 
     while True:
         output = lineproc.stdout.readline()
@@ -31,27 +14,30 @@ def read_lines(client):
             break
         if output:
             output = output.strip().decode('utf-8')
-            print(output.strip())
+            # print(output.strip())
             client.sendMessage(str('L'+str(output.strip())).encode('utf-8'))
+        i += 1
+        if i == 10:
+            # elapsed time for 10 measurements
+            diff = time.time() - start
+            client.sendMessage(str('T{:.2f}'.format(10/diff)).encode('utf-8'))
+            i = 0
+            start = time.time()
     rc = lineproc.poll()
     return rc
 
 
 class LineClient(WebSocketClientProtocol):
-
     def onOpen(self):
-        self.sendMessage(u"Line reader connected".encode('utf8'))
-
+        self.sendMessage(u"ULine reader connected".encode('utf8'))
         read_lines(self)
-            # x = read_line(self.lineproc)
-            # self.sendMessage(x.encode('utf-8'))
-            # self.factory.loop.call_later(1, send_line)
 
     def onMessage(self, payload, isBinary):
         return
 
     def onClose(self, wasClean, code, reason):
-        print("Line reader connection closed: {0}".format(reason))
+        print("ULine reader connection closed: {0}".format(reason))
+        self.sendMessage(u"ULine reader connection closed.".encode('utf8'))
         self.lineproc.terminate()
 
 

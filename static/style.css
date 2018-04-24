@@ -6,3 +6,18 @@ html, body {
   height: 100%;
   margin: 0;
 }
+#update{
+    overflow-y: scroll;
+    height: 20%;
+}
+div.alert{
+    padding:3px!important;
+    margin:3px!important;
+}
+table, td, tr, th{
+    border: 1px solid gray;
+    padding: 3px;
+}
+table{
+    margin: 5px;
+}
