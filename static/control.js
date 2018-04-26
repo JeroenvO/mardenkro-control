@@ -50,18 +50,19 @@ $(document).ready(function () {
         ctx.fill();
     }
 
-    function timestamp(){
+    function timestamp() {
         var dt = new Date();
         var m = dt.getMinutes();
         var s = dt.getSeconds();
-        if(m<10){
-            m = '0'+m;
+        if (m < 10) {
+            m = '0' + m;
         }
-        if(s<10){
-            s = '0'+m;
+        if (s < 10) {
+            s = '0' + m;
         }
         return dt.getHours() + ':' + m + ':' + s + '; '
     }
+
     var hostname = window.location.hostname;
     socket = new WebSocket("ws://" + hostname + ":9000");
     socket.binaryType = "arraybuffer";
@@ -80,39 +81,64 @@ $(document).ready(function () {
                 $('#info').text('# lines [0-100]: ' + d[3].toString());
                 drawLine(d[1], d[2]);
             }
-        } else if (e.data.startsWith('U')) {
+        } else if (e.data.startsWith('U')) { // Update with random information
             $("#update").prepend(timestamp() + e.data.substr(1) + '<br />');
-        } else if (e.data.startsWith('T')) {
-            $("#time").text('Refresh rate: '+ e.data.substr(1) + 'Hz');
-        } else if (e.data.startsWith('A')) {
+        } else if (e.data.startsWith('T')) { // Time refresh rate of line reader
+            $("#time").text('Refresh rate: ' + e.data.substr(1) + 'Hz');
+        } else if (e.data.startsWith('A')) { // Arduino information
             var d = JSON.parse(e.data.substr(1));
-            $("#curarm").text(d[1]);
-            $("#curspeed").text('Left: '+ d[0] + ' Right: '+ d[1]);
-        } else{
-            console.log("Received: "+e.data)
+            $("#curarm").text(d[2]);
+            $("#curspeedright").text(parseInt(d[0]*100));
+            $("#curspeedleft").text(parseInt(d[1]*100));
+        } else if (e.data.startsWith('C')) { // Control
+            var v = JSON.parse(e.data.substr(1));
+            $("#setarm").text(v[2]);
+            $("#setpump").text(v[3]);
+            $("#setvalve").text(v[4]);
+            $("#setspeedright").text(v[0]);
+            $("#setspeedleft").text(v[1]);
+
         }
-    };
+        else {    // unknown message
+            console.log("Received random: " + e.data)
+        }
+    }
+    ;
     socket.onclose = function (e) {
-        console.log("Connection closed.");
         $("#update").prepend(timestamp() + 'Raspberry connection lost! <br />');
+        $("#info").text('Stopped.');
+        $("#time").text('Refresh rate: 0 Hz');
         socket = null;
         isopen = false;
     };
-
-    $('a.btn').click(function () {
-        var s = $('#speedslide')[0].value;
+    $('a#enablefollower').click(function () {
+        var msg = 'F1';
+        console.log('tx:' + msg);
+        socket.send(msg);
+    });
+    $('a#disablefollower').click(function () {
+        var msg = 'F0';
+        console.log('tx:' + msg);
+        socket.send(msg);
+    });
+    $('a.dir').click(function () {
+        var s = parseInt($('#speedslide')[0].value);
+        var pump = parseInt($('#pumpslide')[0].value);
+        var arm = parseInt($('#armslide')[0].value);
+        var valve = parseInt($('#valveslide')[0].value);
         var v = $(this).data('dir');
         v = v.map(function (x) {
             return (x * s)
         });  //speed and direction
-        var pomp = 0;
-        var threeway = 0;
-        var arm = parseInt($('#arm')[0].value);
         $("#setarm").text(arm);
-        $("#setspeed").text('Left: '+ v[0] + ' Right: '+ v[1]);
-        var msg = 'C' + JSON.stringify([v[0], v[1], arm, pomp, threeway]);
-        console.log(msg);
+        $("#setpump").text(pump);
+        $("#setvalve").text(valve);
+        $("#setspeedright").text(v[0]);
+        $("#setspeedleft").text(v[1]);
+        var msg = 'C' + JSON.stringify([v[0], v[1], arm, pump, valve]);
+        console.log('tx:' + msg);
         socket.send(msg)
     });
 
-});
+})
+;

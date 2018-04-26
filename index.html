@@ -11,48 +11,70 @@
 
 <body>
 <div class="container">
-    <div id="speed" class="alert border-danger">Starting...</div>
+    <!--<div id="speed" class="alert border-danger">Starting...</div>-->
     <div class="alert border-primary clearfix">
         <div class="float-left">
+            Press 'X' to send values.
             <table>
                 <thead>
                 <th>type</th>
                 <th>slide</th>
-                <th>setpoint</th>
-                <th>reading</th>
+                <th class="width12">setpoint</th>
+                <th class="width12">reading</th>
                 </thead>
                 <tr>
                     <td>Speed:</td>
                     <td><input title="range input" type="range" min="0" max="250" step="1" id="speedslide"/></td>
-                    <td id="setspeed">Left: 0 Right: 0</td>
-                    <td id="curspeed">?</td>
+                    <td id="setspeed">L: <span id="setspeedleft"></span><br />R: <span id="setspeedright"></span></td>
+                    <td id="curspeed">L: <span id="curspeedleft"></span><br />R: <span id="curspeedright"></span></td>
                 </tr>
                 <tr>
                     <td>Arm:</td>
-                    <td><input title="range input" type="range" min="0" value="500" max="900" step="1" id="arm"/></td>
+                    <td><input title="range input" type="range" min="50" value="500" max="900" step="1" id="armslide"/>
+                    </td>
                     <td id="setarm">500</td>
                     <td id="curarm">?</td>
+                </tr>
+                <tr>
+                    <td>Pump:</td>
+                    <td><input title="range input" type="range" min="0" value="0" max="100" step="1" id="pumpslide"/>
+                    </td>
+                    <td id="setpump">0</td>
+                    <td id="curpump">-</td>
+                </tr>
+                <tr>
+                    <td>Threeway:</td>
+                    <td><input title="range input" type="range" min="0" value="0" max="1" step="1" id="valveslide"/>
+                    </td>
+                    <td id="setvalve">0</td>
+                    <td id="curvalve">-</td>
                 </tr>
             </table>
         </div>
         <div class="float-left">
             <table>
                 <tr>
-                    <td></td>
-                    <td><a class="btn" id="n" data-dir='[1,1]'>N</a></td>
-                    <td></td>
+                    <td><a href='#' class="btn btn-primary dir" id="n" data-dir='[1,0.5]'>NW</a></td>
+                    <td><a href='#' class="btn btn-primary dir" id="n" data-dir='[1,1]'>N</a></td>
+                    <td><a href='#' class="btn btn-primary dir" id="n" data-dir='[0.5,1]'>NE</a></td>
                 </tr>
                 <tr>
-                    <td><a class="btn" id="w" data-dir='[1,0]'>W</a></td>
-                    <td><a class="btn" id="x" data-dir='[0,0]'>X</a></td>
-                    <td><a class="btn" id="e" data-dir='[0,1]'>E</a></td>
+                    <td><a href='#' class="btn btn-primary dir" id="w" data-dir='[1,0]'>W</a></td>
+                    <td><a href='#' class="btn btn-primary dir" id="x" data-dir='[0,0]'>X</a></td>
+                    <td><a href='#' class="btn btn-primary dir" id="e" data-dir='[0,1]'>E</a></td>
                 </tr>
+                <!--
                 <tr>
                     <td></td>
-                    <td><a class="btn" id="s" data-dir='[-1,-1]'>S</a></td>
+                    <td><a href='#' class="btn btn-primary" id="s" data-dir='[-1,-1]'>S</a></td>
                     <td></td>
                 </tr>
+                -->
             </table>
+        </div>
+        <div class="float-left">
+            <a href='#' class="btn btn-secondary" id="enablefollower">Enable line follow</a>
+            <a href='#' class="btn btn-secondary" id="disablefollower">Disable line follow</a>
         </div>
     </div>
     <div>
@@ -66,7 +88,7 @@
     <div id="update" class="alert border-info"></div>
     <hr/>
     <footer>
-        <p>Mardenkro control - Jeroen van Oorschot 2018</p>
+        <p>Mardenkro control - Jeroen van Oorschot & Pieter van den Boom 2018</p>
     </footer>
 </div>
 <script src="/static/jquery-3.3.1.min.js"></script>

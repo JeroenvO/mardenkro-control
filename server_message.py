@@ -27,8 +27,7 @@ class MessageServer(WebSocketServerProtocol):
             if client != self:
                 client.sendMessage(payload, isBinary=False)
 
-
-if __name__ == '__main__':
+def run():
     import asyncio
     from autobahn.asyncio.websocket import WebSocketServerFactory
 
@@ -46,3 +45,6 @@ if __name__ == '__main__':
     finally:
         server.close()
         loop.close()
+
+if __name__ == '__main__':
+    run()

@@ -6,7 +6,7 @@ from autobahn.asyncio.websocket import WebSocketClientProtocol
 
 BAUD = 115200
 PORT = "/dev/serial0"
-
+ser = None
 
 def read_arduino(client, ser):
     client.sendMessage(u'UArduino read thread started.'.encode('utf-8'))
@@ -15,10 +15,11 @@ def read_arduino(client, ser):
             d = str(ser.readline().decode())
             if d:
                 try:
-                    d = json.loads(d)
+                    d = json.dumps(json.loads(d))
                     d = 'A'+d
                 except:
-                    d = 'U'+d
+                    if d != 'Message received.':
+                        d = 'U'+str(d)
                 # print(d)
                 client.sendMessage(d.encode('utf-8'))
         except Exception as e:
@@ -34,10 +35,11 @@ class ArduinoClient(WebSocketClientProtocol):
 
     def onMessage(self, payload, isBinary):
         payload = payload.decode('utf-8')
-        if payload[0] == 'C':  # only listen to control messages
-            payload = payload[1:]+'\n'
-            print("arduino tx: "+payload)
-            ser.write(payload.encode())
+        if payload:
+            if payload[0] == 'C':  # only listen to control messages
+                payload = payload[1:]+'\n'
+                print("arduino tx: "+payload)
+                ser.write(payload.encode())
 
     def onClose(self, wasClean, code, reason):
         print("UArduino server connection closed: {0}".format(reason))
@@ -45,10 +47,10 @@ class ArduinoClient(WebSocketClientProtocol):
         ser.close()
         self.thread.join()
 
-if __name__ == '__main__':
+def run():
     import asyncio
     from autobahn.asyncio.websocket import WebSocketClientFactory
-
+    global ser
     ser = serial.Serial(PORT, BAUD, timeout=0.5)  # Open named port
 
     factory = WebSocketClientFactory()
@@ -58,3 +60,6 @@ if __name__ == '__main__':
     loop.run_until_complete(coro)
     loop.run_forever()
     loop.close()
+
+if __name__ == '__main__':
+    run()

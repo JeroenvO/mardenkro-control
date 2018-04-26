@@ -41,7 +41,7 @@ class LineClient(WebSocketClientProtocol):
         self.lineproc.terminate()
 
 
-if __name__ == '__main__':
+def run():
     import asyncio
     from autobahn.asyncio.websocket import WebSocketClientFactory
 
@@ -52,3 +52,7 @@ if __name__ == '__main__':
     loop.run_until_complete(coro)
     loop.run_forever()
     loop.close()
+
+
+if __name__ == '__main__':
+    run()

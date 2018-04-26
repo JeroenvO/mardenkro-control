@@ -21,3 +21,6 @@ table, td, tr, th{
 table{
     margin: 5px;
 }
+.width12{
+    width: 8em;
+}
