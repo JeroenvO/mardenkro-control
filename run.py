@@ -1,3 +1,8 @@
+import asyncio
+
+from autobahn.asyncio.websocket import WebSocketClientFactory
+
+global ser
 from multiprocessing import Process
 from time import sleep
 
@@ -5,9 +10,18 @@ import server_arduino
 import server_control
 import server_line
 import server_message
+from autobahn.asyncio.websocket import WebSocketClientProtocol
 
+m = None
+a = None
+l = None
+c = None
 
-if __name__ == '__main__':
+def startall():
+    global m
+    global a
+    global l
+    global c
     sleep(1)
 
     print("Starting message server")
@@ -29,3 +43,24 @@ if __name__ == '__main__':
     print("Starting control server")
     c = Process(target=server_control.run)
     c.start()
+
+    sleep(1)
+
+
+def stopall():
+    global m
+    global a
+    global l
+    global c
+    m.terminate()
+    a.terminate()
+    l.terminate()
+    c.terminate()
+    sleep(3)
+    m.join()
+    a.join()
+    l.join()
+    c.join()
+
+
+startall()
