@@ -1,6 +1,8 @@
 import math
 
+# defines
 ARM_M_PER_STEP = 0.125 / 500
+# camera calibrations in meters.
 CAMERA_WIDTH_BOTTOM = 0.43
 CAMERA_WIDTH_TOP = 1.58
 CAMERA_TO_NOZZLE = .41

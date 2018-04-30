@@ -5,6 +5,7 @@ from threading import Thread
 from time import sleep
 
 from autobahn.asyncio.websocket import WebSocketClientProtocol
+
 from control_conversion import *
 from control_functions import *
 
@@ -23,21 +24,6 @@ def motor_control(client):
     :param angle: angle of the paint line as seen by the camera.
     :return: left and right motor position.
     """
-
-
-
-    def calculate_speed(a_arm, l_angle, l_offset):
-        """
-
-        :param a_arm:
-        :param l_angle:
-        :param l_offset:
-        :return:
-        """
-        v_new = 1/(1+mu_1) * a_arm + l_offset
-
-        return None
-
     global linact_post
     global buffer_arduino
     global buffer_line
@@ -49,7 +35,7 @@ def motor_control(client):
         # control loop
         while running:
             now = datetime.now()
-            a_right, a_left, a_arm = buffer_arduino[1] #
+            a_right, a_left, a_arm = buffer_arduino[1]  #
             l_nlines, l_offset, l_angle, _ = buffer_line[1]  # type, offset, angle (rad), #lines
             if buffer_arduino[0] - now > max_diff:
                 running = False
@@ -69,15 +55,15 @@ def motor_control(client):
                 valve = 0
             else:
                 # normal control
-                i_arm = ci_arm(a_arm)                            # current arm in meters
-                real_offset = ci_offset(l_offset, l_angle)       # nozzle to line distance in meters
-                arm = control_arm(i_arm, real_offset)            # new arm position in meters
-                o_arm = co_arm(arm)                              # new arm position in ticks
-                d_speed = control_direction(l_angle, arm)        # difference in speed left/right
+                i_arm = ci_arm(a_arm)  # current arm in meters
+                real_offset = ci_offset(l_offset, l_angle)  # nozzle to line distance in meters
+                arm = control_arm(i_arm, real_offset)  # new arm position in meters
+                o_arm = co_arm(arm)  # new arm position in ticks
+                d_speed = control_direction(l_angle, o_arm)  # difference in speed left/right. o_arm in ticks.
                 setpoint_speed = 10
-                speed = setpoint_speed * 1/(1+l_angle*mu_1)
-                o_left = speed * (1-d_speed/2)
-                o_right = speed * (1+d_speed/2)
+                speed = setpoint_speed * 1 / (1 + (l_angle ** n_1) * mu_1)
+                o_left = speed * (1 - d_speed / 2)
+                o_right = speed * (1 + d_speed / 2)
                 if accuracy_good(nlines, l_angle, arm, i_speed_left, i_speed_right):
                     pump = 100
                     valve = 1
