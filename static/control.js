@@ -112,11 +112,25 @@ $(document).ready(function () {
         isopen = false;
     };
     $('a#enablefollower').click(function () {
-        var msg = 'F1';
+        var s = parseInt($('#speedslide')[0].value);
+        var pump = parseInt($('#pumpslide')[0].value);
+        var valve = parseInt($('#valveslide')[0].value);
+        $("#setarm").text('auto');
+        $("#setpump").text(pump);
+        $("#setvalve").text(valve);
+        $("#setspeedright").text('auto');
+        $("#setspeedleft").text('auto');
+
+        var msg = 'F1'+JSON.stringify([s, pump, valve]);
+
         console.log('tx:' + msg);
         socket.send(msg);
     });
     $('a#disablefollower').click(function () {
+        $("#setarm").text('manual');
+        $("#setspeedright").text('manual');
+        $("#setspeedleft").text('manual');
+
         var msg = 'F0';
         console.log('tx:' + msg);
         socket.send(msg);

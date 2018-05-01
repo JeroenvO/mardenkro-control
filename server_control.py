@@ -14,7 +14,9 @@ linact_post = 0  # position of horizontal moving boom.
 buffer_arduino = ''
 buffer_line = []
 running = False
-
+s_speed = 10  # [0-250] speed setpoint
+s_pump = 0   # [0-100] pump pwm control
+s_valve = 0  # 0=water, 1=paint
 
 def motor_control(client):
     """
@@ -24,10 +26,22 @@ def motor_control(client):
     :param angle: angle of the paint line as seen by the camera.
     :return: left and right motor position.
     """
+    def disable():
+        o_right = 0
+        o_left = 0
+        o_arm = a_arm
+        pump = 0
+        valve = 0
+        client.sendMessage('UAuto disable')
+        client.sendMessage('C' + json.dumps([o_right, o_left, o_arm, pump, valve]))
+
     global linact_post
     global buffer_arduino
     global buffer_line
     global running
+    global s_speed
+    global s_pump
+    global s_valve
     client.sendMessage(u'Ustart controlloop thread'.encode('utf-8'))
     # left, right, arm, pump, valve
     max_diff = timedelta(seconds=2)
@@ -35,38 +49,50 @@ def motor_control(client):
         # control loop
         while running:
             now = datetime.now()
-            a_right, a_left, a_arm = buffer_arduino[1]  #
-            l_nlines, l_offset, l_angle, _ = buffer_line[1]  # type, offset, angle (rad), #lines
-            if buffer_arduino[0] - now > max_diff:
+            # read arduino
+            try:
+                a_right, a_left, a_arm = buffer_arduino[1]  #
+                a_right *= 100  # arduino sends motor speed in [0-2.5], raspi send motor speed in [0-250]
+                a_left *= 100
+                if buffer_arduino[0] - now > max_diff:
+                    running = False
+                    client.sendMessage('UArduino data too old, stopping control loop')
+                    running = False
+                    disable()
+            except:
+                client.sendMessage('UArduino data failed {}, stopping control loop'.format(buffer_arduino))
                 running = False
-                client.sendMessage('UArduino data too old, stopping control loop')
-                o_right = 0
-                o_left = 0
-                o_arm = a_arm
-                pump = 0
-                valve = 0
-            elif buffer_line[0] - now > max_diff:
+                disable()
+            # read lines
+            try:
+                _, l_offset, l_angle, l_nlines = buffer_line[1]  # type, offset, angle (rad), #lines
+                if buffer_line[0] - now > max_diff:
+                    running = False
+                    client.sendMessage('ULine follow data too old, stopping control loop')
+            except:
+                client.sendMessage('ULine follow data failed {}, stopping control loop'.format(buffer_line))
                 running = False
-                client.sendMessage('ULine follow data too old, stopping control loop')
-                o_right = 0
-                o_left = 0
-                o_arm = a_arm
-                pump = 0
-                valve = 0
-            else:
+                disable()
+
+            if running:
                 # normal control
                 i_arm = ci_arm(a_arm)  # current arm in meters
                 real_offset = ci_offset(l_offset, l_angle)  # nozzle to line distance in meters
                 arm = control_arm(i_arm, real_offset)  # new arm position in meters
                 o_arm = co_arm(arm)  # new arm position in ticks
+                if 50 < o_arm or o_arm > 890:
+                    arm_good = False
+                    client.sendMessage('U' + 'Control error, Arm at end of position')
+                else:
+                    arm_good = True
                 d_speed = control_direction(l_angle, o_arm)  # difference in speed left/right. o_arm in ticks.
-                setpoint_speed = 10
-                speed = setpoint_speed * 1 / (1 + (l_angle ** n_1) * mu_1)
+                speed = control_speed(s_speed, l_angle)
                 o_left = speed * (1 - d_speed / 2)
                 o_right = speed * (1 + d_speed / 2)
-                if accuracy_good(nlines, l_angle, arm, i_speed_left, i_speed_right):
-                    pump = 100
-                    valve = 1
+                check = accuracy_good(l_nlines, l_angle, arm, a_right, o_right, a_left, o_left)
+                if check[0] and arm_good:
+                    pump = s_pump
+                    valve = s_valve
                 else:
                     # override
                     pump = 0
@@ -74,12 +100,10 @@ def motor_control(client):
                     o_right = 0
                     o_left = 0
                     o_arm = 500
-                    client.sendMessage('U' + 'Control error, overide, control disabled.')
+                    client.sendMessage('U' + 'Control error, overide, control disabled. ' + check[1])
                     running = False
 
-            client.sendMessage('C' + json.dumps([o_right, o_left, o_arm, pump, valve])
-                               .format(linact_post, buffer_arduino,
-                                       buffer_line).encode('utf-8'))
+                client.sendMessage('C' + json.dumps([o_right, o_left, o_arm, pump, valve]))
 
             sleep(0.5)  # control loop run speed
         sleep(1)  # control loop check enabled speed
@@ -95,6 +119,10 @@ class ControlClient(WebSocketClientProtocol):
         global buffer_arduino
         global buffer_line
         global running
+        global s_speed
+        global s_pump
+        global s_valve
+
         payload = payload.decode('utf-8')
         if payload:
             try:
@@ -108,6 +136,7 @@ class ControlClient(WebSocketClientProtocol):
                 if payload[0] == 'F':  # line Follower enable
                     running = payload[1]
                     print("Set running to {}".format(running))
+                    s_speed, s_pump, s_valve = json.loads(payload[2:])
                 elif payload[0] == 'A':
                     print("rx: " + payload)
                     buffer_arduino = [datetime.now(), json.loads(payload[1:])]
