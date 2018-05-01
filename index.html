@@ -24,7 +24,7 @@
                 </thead>
                 <tr>
                     <td>Speed:</td>
-                    <td><input title="range input" type="range" min="0" max="250" step="1" id="speedslide"/></td>
+                    <td><input title="range input" type="range" min="0" max="250" value="5" step="1" id="speedslide"/></td>
                     <td id="setspeed">L: <span id="setspeedleft"></span><br />R: <span id="setspeedright"></span></td>
                     <td id="curspeed">L: <span id="curspeedleft"></span><br />R: <span id="curspeedright"></span></td>
                 </tr>
@@ -75,6 +75,9 @@
         <div class="float-left">
             <a href='#' class="btn btn-secondary" id="enablefollower">Enable line follow</a>
             <a href='#' class="btn btn-secondary" id="disablefollower">Disable line follow</a>
+        </div>
+        <div class="float-left">
+            <div id='light' class='rounded' style="width: 30px; height: 30px; color: orange "></div>
         </div>
     </div>
     <div>

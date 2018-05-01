@@ -4,8 +4,8 @@ $(document).ready(function () {
 
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
-    var w = $('.container').width();
-    var h = w * 0.8;
+    var w = $('.container').width()*0.8;
+    var h = w * 0.6;
     $('#canvas').width(w).height(h);
 
     ctx.canvas.width = w;
@@ -90,14 +90,14 @@ $(document).ready(function () {
             $("#curarm").text(d[2]);
             $("#curspeedright").text(parseInt(d[0]*100));
             $("#curspeedleft").text(parseInt(d[1]*100));
+            $("#light").style('background')
         } else if (e.data.startsWith('C')) { // Control
             var v = JSON.parse(e.data.substr(1));
-            $("#setarm").text(v[2]);
-            $("#setpump").text(v[3]);
-            $("#setvalve").text(v[4]);
-            $("#setspeedright").text(v[0]);
-            $("#setspeedleft").text(v[1]);
-
+            $("#setarm").text(parseInt(v[2]));
+            $("#setpump").text(parseInt(v[3]));
+            $("#setvalve").text(parseInt(v[4]));
+            $("#setspeedright").text(parseInt(v[0]));
+            $("#setspeedleft").text(parseInt(v[1]));
         }
         else {    // unknown message
             console.log("Received random: " + e.data)

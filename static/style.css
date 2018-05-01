@@ -8,7 +8,7 @@ html, body {
 }
 #update{
     overflow-y: scroll;
-    height: 20%;
+    height: 500px;
 }
 div.alert{
     padding:3px!important;

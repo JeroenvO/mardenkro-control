@@ -29,7 +29,7 @@ def co_arm(arm):
     :param arm: in meters
     :return: in steps [50-900]
     """
-    return arm / ARM_M_PER_STEP + 50
+    return round(arm / ARM_M_PER_STEP + 50)
 
 
 def ci_offset(offset, angle):
@@ -41,6 +41,7 @@ def ci_offset(offset, angle):
     :param angle: radians of top angle of detected line
     :return: nozzle wrong position in meters
     """
-    o_offset_camera = offset * CAMERA_WIDTH_BOTTOM/2 + CAMERA_WIDTH_BOTTOM/2
+    o_offset_camera = offset * CAMERA_WIDTH_BOTTOM/2
     o_offset_nozzle = math.tan(angle)*CAMERA_TO_NOZZLE
+    print('c_o:{} c_a{}'.format(o_offset_camera, o_offset_nozzle))
     return o_offset_camera + o_offset_nozzle
